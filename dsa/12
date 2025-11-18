@@ -1,0 +1,155 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_NODES 100
+#define NAME_LEN 10
+#define max(a,b) (( (a) > (b) ) ? (a) : (b))
+
+struct tree {
+    struct tree *lchild;
+    char data[NAME_LEN];
+    struct tree *rchild;
+};
+
+typedef struct tree node;
+
+int ctr;
+node *tree[MAX_NODES];
+
+node* getnode() {
+    node *temp = (node*) malloc(sizeof(node));
+    if (!temp) {
+        printf("Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+    printf("\n Enter Data: ");
+    scanf("%9s", temp->data);   /* limit to avoid overflow */
+    temp->lchild = NULL;
+    temp->rchild = NULL;
+    return temp;
+}
+
+/* Create a full/complete binary tree from user input stored in array */
+void create_fbinarytree() {
+    int j, i = 0;
+
+    printf("\n How many nodes you want: ");
+    scanf("%d", &ctr);
+
+    if (ctr <= 0 || ctr > MAX_NODES) {
+        printf("Invalid number of nodes (1..%d)\n", MAX_NODES);
+        exit(EXIT_FAILURE);
+    }
+
+    /* initialize array */
+    for (j = 0; j < MAX_NODES; j++)
+        tree[j] = NULL;
+
+    /* root */
+    tree[0] = getnode();
+    j = ctr - 1;   /* remaining nodes to create */
+
+    i = 0;
+    while (j > 0 && i < MAX_NODES) {
+        /* left child */
+        if (j > 0) {
+            tree[i * 2 + 1] = getnode();
+            tree[i]->lchild = tree[i * 2 + 1];
+            j--;
+        }
+        /* right child */
+        if (j > 0) {
+            tree[i * 2 + 2] = getnode();
+            tree[i]->rchild = tree[i * 2 + 2];
+            j--;
+        }
+        i++;
+    }
+}
+
+/* Recursive traversals */
+void inorder(node *root) {
+    if (root != NULL) {
+        inorder(root->lchild);
+        printf("%3s", root->data);
+        inorder(root->rchild);
+    }
+}
+
+void preorder(node *root) {
+    if (root != NULL) {
+        printf("%3s", root->data);
+        preorder(root->lchild);
+        preorder(root->rchild);
+    }
+}
+
+void postorder(node *root) {
+    if (root != NULL) {
+        postorder(root->lchild);
+        postorder(root->rchild);
+        printf("%3s", root->data);
+    }
+}
+
+/* Level-order using the array representation */
+void levelorder() {
+    int j;
+    printf("\n");
+    for (j = 0; j < ctr; j++) {
+        if (tree[j] != NULL)
+            printf("%3s", tree[j]->data);
+    }
+    printf("\n");
+}
+
+/* Print leaf nodes (recursive) */
+void print_leaf(node *root) {
+    if (root != NULL) {
+        if (root->lchild == NULL && root->rchild == NULL)
+            printf("%3s ", root->data);
+        print_leaf(root->lchild);
+        print_leaf(root->rchild);
+    }
+}
+
+/* Height: returns 0 for a single-node tree (leaf),
+   -1 for empty tree. Matches your earlier logic style. */
+int height(node *root) {
+    if (root == NULL)
+        return -1;
+    if (root->lchild == NULL && root->rchild == NULL)
+        return 0;
+    return 1 + max(height(root->lchild), height(root->rchild));
+}
+
+int main(void) {
+    create_fbinarytree();
+
+    printf("\n Inorder Traversal: ");
+    inorder(tree[0]);
+
+    printf("\n Preorder Traversal: ");
+    preorder(tree[0]);
+
+    printf("\n Postorder Traversal: ");
+    postorder(tree[0]);
+
+    printf("\n Level Order Traversal: ");
+    levelorder();
+
+    printf("\n Leaf Nodes: ");
+    print_leaf(tree[0]);
+
+    printf("\n Height of Tree: %d\n", height(tree[0]));
+
+    /* free allocated nodes (good practice) */
+    for (int i = 0; i < MAX_NODES; i++) {
+        if (tree[i] != NULL) {
+            free(tree[i]);
+            tree[i] = NULL;
+        }
+    }
+    return 0;
+}
