@@ -1,0 +1,280 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <conio.h>
+#include <string.h>
+
+#define MAX_Q 50
+#define NAME_LEN 10
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+
+struct tree {
+    struct tree* lchild;
+    char data[NAME_LEN];
+    struct tree* rchild;
+};
+typedef struct tree node;
+
+node *Q[MAX_Q];
+int node_ctr = 0;
+
+/* create a single node (reads a string) */
+node* getnode() {
+    node *temp = (node*) malloc(sizeof(node));
+    if (!temp) {
+        printf("\nMemory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+    printf("\n Enter Data: ");
+    scanf("%9s", temp->data);
+    temp->lchild = NULL;
+    temp->rchild = NULL;
+    return temp;
+}
+
+/* build a binary tree interactively (user chooses whether left/right child exists) */
+void create_binarytree(node *root) {
+    char option;
+    if (root == NULL)
+        return;
+
+    /* Left subtree */
+    printf("\n Node %s has Left SubTree (Y/N): ", root->data);
+    scanf(" %c", &option);   /* leading space skips whitespace/newline */
+    if (option == 'Y' || option == 'y') {
+        root->lchild = getnode();
+        create_binarytree(root->lchild);
+    } else {
+        root->lchild = NULL;
+    }
+
+    /* Right subtree */
+    printf("\n Node %s has Right SubTree (Y/N): ", root->data);
+    scanf(" %c", &option);
+    if (option == 'Y' || option == 'y') {
+        root->rchild = getnode();
+        create_binarytree(root->rchild);
+    } else {
+        root->rchild = NULL;
+    }
+}
+
+/* fill array Q[] with tree nodes in level-order (array-style) */
+void make_Queue(node *root, int parentIndex) {
+    if (root == NULL)
+        return;
+    if (parentIndex >= MAX_Q) {
+        printf("\nExceeded queue array size\n");
+        return;
+    }
+    Q[parentIndex] = root;
+    node_ctr = max(node_ctr, parentIndex + 1); /* keep track of used entries */
+    make_Queue(root->lchild, parentIndex * 2 + 1);
+    make_Queue(root->rchild, parentIndex * 2 + 2);
+}
+
+/* delete the last node in level-order (i.e., last filled Q[] slot) */
+void delete_node(node *root) {
+    int index;
+    if (root == NULL) {
+        printf("\n Empty TREE ");
+        return;
+    }
+
+    /* rebuild Q[] */
+    for (int i = 0; i < MAX_Q; i++) Q[i] = NULL;
+    node_ctr = 0;
+    make_Queue(root, 0);
+
+    if (node_ctr == 0) {
+        printf("\n Empty TREE ");
+        return;
+    }
+
+    index = node_ctr - 1;         /* last occupied index */
+    node *toDelete = Q[index];
+    if (toDelete == NULL) {
+        printf("\n Nothing to delete\n");
+        return;
+    }
+
+    /* detach from parent */
+    if (index == 0) {
+        /* deleting root node */
+        free(Q[0]);
+        Q[0] = NULL;
+        printf("\n Node Deleted .. (root)\n");
+        return;
+    }
+
+    int parent = (index - 1) / 2;
+    if (2 * parent + 1 == index) {
+        Q[parent]->lchild = NULL;
+    } else {
+        Q[parent]->rchild = NULL;
+    }
+
+    free(toDelete);
+    Q[index] = NULL;
+    printf("\n Node Deleted ..\n");
+}
+
+/* standard recursive traversals */
+void inorder(node *root) {
+    if (root != NULL) {
+        inorder(root->lchild);
+        printf("%3s", root->data);
+        inorder(root->rchild);
+    }
+}
+
+void preorder(node *root) {
+    if (root != NULL) {
+        printf("%3s", root->data);
+        preorder(root->lchild);
+        preorder(root->rchild);
+    }
+}
+
+void postorder(node *root) {
+    if (root != NULL) {
+        postorder(root->lchild);
+        postorder(root->rchild);
+        printf("%3s", root->data);
+    }
+}
+
+/* print leaf nodes */
+void print_leaf(node *root) {
+    if (root == NULL) return;
+    if (root->lchild == NULL && root->rchild == NULL)
+        printf("%3s ", root->data);
+    print_leaf(root->lchild);
+    print_leaf(root->rchild);
+}
+
+/* height: returns -1 for empty tree, 0 for single node */
+int height(node *root) {
+    if (root == NULL) return -1;
+    if (root->lchild == NULL && root->rchild == NULL) return 0;
+    return 1 + max(height(root->lchild), height(root->rchild));
+}
+
+/* print tree sideways (root in middle) */
+void print_tree(node *root, int line) {
+    int i;
+    if (root != NULL) {
+        print_tree(root->rchild, line + 1);
+        printf("\n");
+        for (i = 0; i < line; i++) printf("   ");
+        printf("%s", root->data);
+        print_tree(root->lchild, line + 1);
+    }
+}
+
+/* print level order from Q[] */
+void level_order(node *Qarr[], int ctr) {
+    int i;
+    for (i = 0; i < ctr; i++) {
+        if (Qarr[i] != NULL)
+            printf("%5s", Qarr[i]->data);
+    }
+    printf("\n");
+}
+
+/* menu */
+int menu() {
+    int ch;
+    clrscr();
+    printf("\n 1. Create Binary Tree ");
+    printf("\n 2. Inorder Traversal ");
+    printf("\n 3. Preorder Traversal ");
+    printf("\n 4. Postorder Traversal ");
+    printf("\n 5. Level Order Traversal");
+    printf("\n 6. Leaf Node ");
+    printf("\n 7. Print Height of Tree ");
+    printf("\n 8. Print Binary Tree ");
+    printf("\n 9. Delete a node ");
+    printf("\n 10. Quit ");
+    printf("\n Enter Your choice: ");
+    scanf("%d", &ch);
+    return ch;
+}
+
+int main(void) {
+    int ch;
+    node *root = NULL;
+
+    do {
+        ch = menu();
+        switch (ch) {
+            case 1:
+                if (root == NULL) {
+                    root = getnode();
+                    create_binarytree(root);
+                } else {
+                    printf("\n Tree is already Created ..\n");
+                }
+                break;
+            case 2:
+                printf("\n Inorder Traversal: ");
+                inorder(root);
+                printf("\n");
+                break;
+            case 3:
+                printf("\n Preorder Traversal: ");
+                preorder(root);
+                printf("\n");
+                break;
+            case 4:
+                printf("\n Postorder Traversal: ");
+                postorder(root);
+                printf("\n");
+                break;
+            case 5:
+                printf("\n Level Order Traversal ..\n");
+                for (int i = 0; i < MAX_Q; i++) Q[i] = NULL;
+                node_ctr = 0;
+                make_Queue(root, 0);
+                level_order(Q, node_ctr);
+                break;
+            case 6:
+                printf("\n Leaf Nodes: ");
+                print_leaf(root);
+                printf("\n");
+                break;
+            case 7:
+                printf("\n Height of Tree: %d \n", height(root));
+                break;
+            case 8:
+                printf("\n Print Tree \n");
+                print_tree(root, 0);
+                printf("\n");
+                break;
+            case 9:
+                delete_node(root);
+                break;
+            case 10:
+                /* free whole tree (simple postorder free) */
+                /* We'll use a stackless postorder-free via recursion */
+                {
+                    /* helper recursive free function */
+                    void free_tree(node *r) {
+                        if (r == NULL) return;
+                        free_tree(r->lchild);
+                        free_tree(r->rchild);
+                        free(r);
+                    }
+                    free_tree(root);
+                    root = NULL;
+                }
+                printf("\nExiting...\n");
+                return 0;
+            default:
+                printf("\n Invalid choice\n");
+        }
+        printf("\nPress any key to continue...");
+        getch();
+    } while (1);
+
+    return 0;
+}
