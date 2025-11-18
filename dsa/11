@@ -1,0 +1,51 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <conio.h>
+
+struct queue {
+    int data;
+    struct queue *next;
+};
+typedef struct queue node;
+
+node *front = NULL;
+node *rear  = NULL;
+
+node* getnode() {
+    node *temp = (node *) malloc(sizeof(node));
+    if (temp == NULL) {
+        printf("\nMemory allocation failed\n");
+        return NULL;
+    }
+    printf("\n Enter data: ");
+    scanf("%d", &temp->data);
+    temp->next = NULL;
+    return temp;
+}
+
+void insertQ() {
+    node *newnode = getnode();
+    if (newnode == NULL) {
+        printf("\n Queue Full (malloc failed)");
+        return;
+    }
+    if (front == NULL) {
+        front = rear = newnode;
+    } else {
+        rear->next = newnode;
+        rear = newnode;
+    }
+    printf("\n\n\t Data Inserted into the Queue..");
+}
+
+void deleteQ() {
+    node *temp;
+    if (front == NULL) {
+        printf("\n\n\t Empty Queue..");
+        return;
+    }
+    temp = front;
+    front = front->next;
+    printf("\n\n\t Deleted element from queue is %d ", temp->data);
+    free(temp);
+    if (front == NULL)
