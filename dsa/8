@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#define MAX 20
+
+int isoperator(char ch)
+{
+    if (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '^')
+        return 1;
+    else
+        return 0;
+}
+
+int main(void)
+{
+    char postfix[MAX];
+    char ch;
+    int i = 0, top = 0;
+    float val_stack[MAX], val1, val2, res;
+
+    clrscr();
+    printf("\n Enter a postfix expression: ");
+    scanf("%s", postfix);   /* beware: no bounds check, keep input < MAX */
+
+    while ((ch = postfix[i]) != '\0')
+    {
+        if (isoperator(ch) == 1)
+        {
+            /* pop two operands (note: assumes valid postfix and enough operands) */
+            val2 = val_stack[--top];
+            val1 = val_stack[--top];
+
+            switch (ch)
+            {
+                case '+':
+                    res = val1 + val2;
+                    break;
+                case '-':
+                    res = val1 - val2;
+                    break;
+                case '*':
+                    res = val1 * val2;
+                    break;
+                case '/':
+                    res = val1 / val2;
+                    break;
+                case '^':
+                    res = (float)pow(val1, val2);
+                    break;
+                default:
+                    res = 0.0f; /* unreachable */
+            }
+            val_stack[top] = res; /* push result */
+        }
+        else
+        {
+            /* convert single-digit char to numeric value */
+            val_stack[top] = (float)(ch - '0');
+        }
+        top++;
+        i++;
+    }
+
+    printf("\n Value of %s is : %f\n", postfix, val_stack[0]);
+    getch();
+    return 0;
+}
