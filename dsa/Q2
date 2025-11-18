@@ -1,0 +1,27 @@
+#include <stdio.h>
+
+void evenPositions(int arr[], int size) {
+    printf("Positions of even numbers:\n");
+
+    for(int i = 0; i < size; i++) {
+        if(arr[i] % 2 == 0) {
+            printf("%d ", i);   // printing the index (position)
+        }
+    }
+    printf("\n");
+}
+
+int main() {
+    int arr[10];   // divisible by 3 up to 30 → total 10 numbers
+    int index = 0;
+
+    // initialize array with numbers divisible by 3
+    for(int i = 3; i <= 30; i += 3) {
+        arr[index] = i;
+        index++;
+    }
+
+    evenPositions(arr, 10);
+
+    return 0;
+}
