@@ -1,0 +1,28 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <conio.h>
+
+struct stack {
+    int data;
+    struct stack *next;
+};
+
+typedef struct stack node;
+
+/* globals */
+node *start = NULL;   /* head of the linked list */
+node *top = NULL;     /* pointer to last node (top of stack) */
+
+node* getnode() {
+    node *temp = (node *) malloc(sizeof(node));
+    if (temp == NULL) {
+        printf("\nMemory allocation failed\n");
+        exit(1);
+    }
+    printf("\n Enter data: ");
+    scanf("%d", &temp->data);
+    temp->next = NULL;
+    return temp;
+}
+
+/* push newnode at the end; update t*
